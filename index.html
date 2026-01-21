@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
+    <title>Schwarzwald-Galerie</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,6 +15,10 @@
             align-items: center;
             height: 100vh;
             flex-direction: column;
+        }
+
+        h1 {
+            margin-bottom: 20px;
         }
 
         .gallery {
@@ -29,14 +33,50 @@
             height: auto;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        /* Lightbox Styles */
+        .lightbox-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-image {
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 8px;
+        }
+
+        /* Close button */
+        .lightbox-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <h1>Image Gallery</h1>
+    <h1>Schwarzwald-Galerie</h1>
     <div class="gallery" id="gallery-container">
         <!-- Images will be dynamically inserted here -->
+    </div>
+
+    <!-- Lightbox Modal -->
+    <div class="lightbox-overlay" id="lightbox-overlay">
+        <span class="lightbox-close" id="lightbox-close">&times;</span>
+        <img id="lightbox-image" class="lightbox-image" src="" alt="Maximized Image">
     </div>
 
     <script>
@@ -54,12 +94,32 @@
                 img.alt = `Image ${imgNumber}`;
                 img.onload = () => container.appendChild(img);  // Add image to the gallery once loaded
                 img.onerror = () => console.error(`Image ${imgSrc} not found.`);
+                
+                // Add click event to open the image in lightbox
+                img.addEventListener('click', () => openLightbox(imgSrc));
             }
         }
+
+        // Open the lightbox with the selected image
+        function openLightbox(imageSrc) {
+            const lightbox = document.getElementById('lightbox-overlay');
+            const lightboxImage = document.getElementById('lightbox-image');
+            lightbox.style.display = 'flex';
+            lightboxImage.src = imageSrc;
+        }
+
+        // Close the lightbox
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox-overlay');
+            lightbox.style.display = 'none';
+        }
+
+        // Attach event listener to close button
+        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
 
         // Call the function to generate the gallery
         generateGallery();
     </script>
-    
+
 </body>
 </html>
