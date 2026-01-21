@@ -47,12 +47,14 @@
             display: none;
             justify-content: center;
             align-items: center;
+            cursor: pointer; /* Makes it clear that clicking outside will close the lightbox */
         }
 
         .lightbox-image {
             max-width: 90%;
             max-height: 80%;
             border-radius: 8px;
+            cursor: default; /* Ensure the image doesn't close the lightbox on click */
         }
 
         /* Close button */
@@ -116,6 +118,20 @@
 
         // Attach event listener to close button
         document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+
+        // Close the lightbox when clicking outside the image (on overlay)
+        document.getElementById('lightbox-overlay').addEventListener('click', function(e) {
+            if (e.target === this) {  // Check if the clicked target is the overlay (not the image)
+                closeLightbox();
+            }
+        });
+
+        // Close the lightbox when pressing ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
 
         // Call the function to generate the gallery
         generateGallery();
