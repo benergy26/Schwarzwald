@@ -15,6 +15,7 @@
             align-items: center;
             height: 100vh;
             flex-direction: column;
+            overflow: hidden; /* Prevent overflow */
         }
 
         h1 {
@@ -22,18 +23,24 @@
         }
 
         .gallery {
-            display: flex;
-            flex-wrap: wrap;
+            display: grid;  /* Use grid for more control */
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsively fill columns */
             gap: 20px;
-            justify-content: center;
+            justify-items: center;
+            padding: 10px;
+            width: 100%;
+            max-width: 1200px; /* Limit max gallery width */
         }
 
         .gallery img {
-            width: 300px;
+            width: 100%;
             height: auto;
+            max-width: 300px;
+            max-height: 300px; /* Prevent large images */
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             cursor: pointer;
+            object-fit: cover;  /* Maintain aspect ratio */
         }
 
         /* Lightbox Styles */
@@ -89,16 +96,23 @@
             for (let i = 1; i <= 23; i++) {  // Adjust the loop to the number of images you have
                 let imgNumber = i.toString().padStart(3, '0');  // Format as 001, 002, ...
                 let imgSrc = `${imgNumber}.jpg`;
-                
-                // Check if the image exists before adding it to the gallery
-                let img = new Image();
+
+                // Create image element
+                let img = document.createElement("img");
                 img.src = imgSrc;
                 img.alt = `Image ${imgNumber}`;
-                img.onload = () => container.appendChild(img);  // Add image to the gallery once loaded
-                img.onerror = () => console.error(`Image ${imgSrc} not found.`);
-                
+
                 // Add click event to open the image in lightbox
                 img.addEventListener('click', () => openLightbox(imgSrc));
+
+                // Add image to the gallery immediately (without waiting for load)
+                container.appendChild(img);
+
+                // Optionally, we can add a fallback if images are missing:
+                img.onerror = () => {
+                    img.style.display = 'none';  // Hide the image if not found
+                    console.error(`Image ${imgSrc} not found.`);
+                };
             }
         }
 
