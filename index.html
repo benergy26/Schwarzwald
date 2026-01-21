@@ -1,155 +1,485 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schwarzwald-Galerie</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-            overflow: hidden; /* Prevent overflow */
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         h1 {
-            margin-bottom: 20px;
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #e8d5b7, #f0e6d3, #e8d5b7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 4px;
+            font-weight: 300;
+        }
+
+        .gallery-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
         }
 
         .gallery {
-            display: grid;  /* Use grid for more control */
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsively fill columns */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
-            justify-items: center;
-            padding: 10px;
-            width: 100%;
-            max-width: 1200px; /* Limit max gallery width */
         }
 
-        .gallery img {
-            width: 100%;
-            height: auto;
-            max-width: 300px;
-            max-height: 300px; /* Prevent large images */
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 4 / 3;
+            overflow: hidden;
+            border-radius: 12px;
             cursor: pointer;
-            object-fit: cover;  /* Maintain aspect ratio */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .gallery-item::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item:hover::after {
+            opacity: 1;
+        }
+
+        .image-number {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #1a1a2e;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1;
+        }
+
+        .gallery-item:hover .image-number {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* Lightbox Styles */
-        .lightbox-overlay {
+        .lightbox {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            justify-content: center;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
             align-items: center;
-            cursor: pointer; /* Makes it clear that clicking outside will close the lightbox */
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(20px);
         }
 
-        .lightbox-image {
-            max-width: 90%;
-            max-height: 80%;
+        .lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .lightbox.active .lightbox-content {
+            transform: scale(1);
+        }
+
+        .lightbox-content img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
             border-radius: 8px;
-            cursor: default; /* Ensure the image doesn't close the lightbox on click */
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
         }
 
-        /* Close button */
         .lightbox-close {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            color: white;
-            font-size: 30px;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease, transform 0.3s ease;
+            z-index: 1001;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .lightbox-close::before,
+        .lightbox-close::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 2px;
+            background: #fff;
+        }
+
+        .lightbox-close::before {
+            transform: rotate(45deg);
+        }
+
+        .lightbox-close::after {
+            transform: rotate(-45deg);
+        }
+
+        .lightbox-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+            z-index: 1001;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .lightbox-nav.prev {
+            left: 20px;
+        }
+
+        .lightbox-nav.next {
+            right: 20px;
+        }
+
+        .lightbox-nav::before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border-top: 2px solid #fff;
+            border-right: 2px solid #fff;
+        }
+
+        .lightbox-nav.prev::before {
+            transform: rotate(-135deg) translateX(-2px);
+        }
+
+        .lightbox-nav.next::before {
+            transform: rotate(45deg) translateX(-2px);
+        }
+
+        /* Loading state */
+        .gallery-item.loading {
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.05) 25%, 
+                rgba(255, 255, 255, 0.1) 50%, 
+                rgba(255, 255, 255, 0.05) 75%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .gallery-item img.loaded {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+                letter-spacing: 4px;
+            }
+
+            .subtitle {
+                font-size: 0.8rem;
+            }
+
+            header {
+                padding: 40px 15px 30px;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 12px;
+            }
+
+            .gallery-container {
+                padding: 20px 12px 40px;
+            }
+
+            .lightbox-nav {
+                width: 40px;
+                height: 40px;
+            }
+
+            .lightbox-nav.prev {
+                left: 10px;
+            }
+
+            .lightbox-nav.next {
+                right: 10px;
+            }
+
+            .lightbox-close {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>Schwarzwald-Galerie</h1>
+        <p class="subtitle">23 Impressionen aus dem Schwarzwald</p>
+    </header>
 
-    <h1>Schwarzwald-Galerie</h1>
-    <div class="gallery" id="gallery-container">
-        <!-- Images will be dynamically inserted here -->
+    <main class="gallery-container">
+        <div class="gallery" id="gallery"></div>
+    </main>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightbox-close" aria-label="Schließen"></button>
+        <button class="lightbox-nav prev" id="lightbox-prev" aria-label="Vorheriges Bild"></button>
+        <div class="lightbox-content">
+            <img src="" alt="" id="lightbox-img">
+        </div>
+        <button class="lightbox-nav next" id="lightbox-next" aria-label="Nächstes Bild"></button>
+        <div class="lightbox-counter" id="lightbox-counter"></div>
     </div>
 
-    <!-- Lightbox Modal -->
-    <div class="lightbox-overlay" id="lightbox-overlay">
-        <span class="lightbox-close" id="lightbox-close">&times;</span>
-        <img id="lightbox-image" class="lightbox-image" src="" alt="Maximized Image">
-    </div>
+    <footer>
+        <p>© 2024 Schwarzwald-Galerie</p>
+    </footer>
 
     <script>
-        // Function to generate image elements
+        const totalImages = 23;
+        const gallery = document.getElementById('gallery');
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxCounter = document.getElementById('lightbox-counter');
+        const lightboxClose = document.getElementById('lightbox-close');
+        const lightboxPrev = document.getElementById('lightbox-prev');
+        const lightboxNext = document.getElementById('lightbox-next');
+        
+        let currentIndex = 0;
+
+        // Generate gallery items
         function generateGallery() {
-            const container = document.getElementById("gallery-container");
-            
-            for (let i = 1; i <= 23; i++) {  // Adjust the loop to the number of images you have
-                let imgNumber = i.toString().padStart(3, '0');  // Format as 001, 002, ...
-                let imgSrc = `${imgNumber}.jpg`;
-
-                // Create image element
-                let img = document.createElement("img");
-                img.src = imgSrc;
-                img.alt = `Image ${imgNumber}`;
-
-                // Add click event to open the image in lightbox
-                img.addEventListener('click', () => openLightbox(imgSrc));
-
-                // Add image to the gallery immediately (without waiting for load)
-                container.appendChild(img);
-
-                // Optionally, we can add a fallback if images are missing:
-                img.onerror = () => {
-                    img.style.display = 'none';  // Hide the image if not found
-                    console.error(`Image ${imgSrc} not found.`);
+            for (let i = 1; i <= totalImages; i++) {
+                const imageNumber = String(i).padStart(3, '0');
+                const imagePath = `${imageNumber}.jpg`;
+                
+                const galleryItem = document.createElement('div');
+                galleryItem.className = 'gallery-item loading';
+                galleryItem.dataset.index = i - 1;
+                
+                const img = document.createElement('img');
+                img.src = imagePath;
+                img.alt = `Schwarzwald Bild ${i}`;
+                img.loading = 'lazy';
+                
+                img.onload = function() {
+                    galleryItem.classList.remove('loading');
+                    img.classList.add('loaded');
                 };
+                
+                img.onerror = function() {
+                    galleryItem.classList.remove('loading');
+                    galleryItem.style.display = 'none';
+                };
+                
+                const numberLabel = document.createElement('span');
+                numberLabel.className = 'image-number';
+                numberLabel.textContent = `${i} / ${totalImages}`;
+                
+                galleryItem.appendChild(img);
+                galleryItem.appendChild(numberLabel);
+                gallery.appendChild(galleryItem);
+                
+                // Click event to open lightbox
+                galleryItem.addEventListener('click', () => openLightbox(i - 1));
             }
         }
 
-        // Open the lightbox with the selected image
-        function openLightbox(imageSrc) {
-            const lightbox = document.getElementById('lightbox-overlay');
-            const lightboxImage = document.getElementById('lightbox-image');
-            lightbox.style.display = 'flex';
-            lightboxImage.src = imageSrc;
+        // Open lightbox
+        function openLightbox(index) {
+            currentIndex = index;
+            updateLightboxImage();
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
-        // Close the lightbox
+        // Close lightbox
         function closeLightbox() {
-            const lightbox = document.getElementById('lightbox-overlay');
-            lightbox.style.display = 'none';
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
         }
 
-        // Attach event listener to close button
-        document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+        // Update lightbox image
+        function updateLightboxImage() {
+            const imageNumber = String(currentIndex + 1).padStart(3, '0');
+            lightboxImg.src = `${imageNumber}.jpg`;
+            lightboxImg.alt = `Schwarzwald Bild ${currentIndex + 1}`;
+            lightboxCounter.textContent = `${currentIndex + 1} / ${totalImages}`;
+        }
 
-        // Close the lightbox when clicking outside the image (on overlay)
-        document.getElementById('lightbox-overlay').addEventListener('click', function(e) {
-            if (e.target === this) {  // Check if the clicked target is the overlay (not the image)
-                closeLightbox();
+        // Navigate to previous image
+        function prevImage(e) {
+            e.stopPropagation();
+            currentIndex = (currentIndex - 1 + totalImages) % totalImages;
+            updateLightboxImage();
+        }
+
+        // Navigate to next image
+        function nextImage(e) {
+            e.stopPropagation();
+            currentIndex = (currentIndex + 1) % totalImages;
+            updateLightboxImage();
+        }
+
+        // Event listeners
+        lightbox.addEventListener('click', closeLightbox);
+        lightboxClose.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeLightbox();
+        });
+        lightboxPrev.addEventListener('click', prevImage);
+        lightboxNext.addEventListener('click', nextImage);
+
+        // Prevent closing when clicking on image
+        document.querySelector('.lightbox-content').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (!lightbox.classList.contains('active')) return;
+            
+            switch(e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    currentIndex = (currentIndex - 1 + totalImages) % totalImages;
+                    updateLightboxImage();
+                    break;
+                case 'ArrowRight':
+                    currentIndex = (currentIndex + 1) % totalImages;
+                    updateLightboxImage();
+                    break;
             }
         });
 
-        // Close the lightbox when pressing ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeLightbox();
-            }
-        });
-
-        // Call the function to generate the gallery
+        // Initialize gallery
         generateGallery();
     </script>
-
 </body>
 </html>
